@@ -20,5 +20,3 @@ ln -s $dotfiles/vim/vimrc $HOME/.vimrc
 # GIT config
 ln -s $dotfiles/git/gitconfig $HOME/.gitconfig
 ln -s $dotfiles/git/gitignore_global $HOME/.gitignore_global
-
-
