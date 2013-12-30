@@ -47,3 +47,4 @@ source $ZSH/oh-my-zsh.sh
 # Customize to your needs...
 export PATH=:$HOME/.rvm/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
 
+alias st='open -a /Applications/Sublime\ Text\ 2.app/Contents/MacOS/Sublime\ Text\ 2'
