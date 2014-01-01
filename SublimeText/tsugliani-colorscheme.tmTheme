@@ -7,7 +7,7 @@
 <plist version="1.0">
 <dict>
 	<key>name</key>
-	<string>Juicy2</string>
+	<string>tsugliani</string>
 	<key>settings</key>
 	<array>
 		<dict>
@@ -389,6 +389,6 @@
 	<key>colorSpaceName</key>
 	<string>sRGB</string>
 	<key>semanticClass</key>
-	<string>theme.dark.juicy</string>
+	<string>theme.dark.tsugliani</string>
 </dict>
 </plist>
