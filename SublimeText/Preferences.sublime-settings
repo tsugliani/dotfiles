@@ -1,10 +1,9 @@
 {
+	"color_scheme": "Packages/tsugliani-colorscheme/tsugliani-colorscheme.tmTheme",
 	"font_size": 13.0,
 	"ignored_packages":
 	[
 		"Vintage"
 	],
-
-    "color_scheme": "Packages/tsugliani-colorscheme/tsugliani-colorscheme.tmTheme",
-    "theme": "Spacegray Eighties.sublime-theme"
+	"theme": "Spacegray Eighties.sublime-theme"
 }
