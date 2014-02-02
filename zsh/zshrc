@@ -50,6 +50,7 @@ source $ZSH/oh-my-zsh.sh
 export PATH=:$HOME/.rvm/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
 
 function http-vcloud-login {
+    # https://vcloud.tsugliani.fr tsugliani@coe login helper
     http --session=vcloud-coe-tsugliani \
     -a tsugliani@coe \
     POST https://vcloud.tsugliani.fr/api/sessions \
@@ -59,7 +60,7 @@ function http-vcloud-login {
 
 function http-vcloud {
     # https://vcloud.tsugliani.fr httpie helper
-    http --session=vcloud-coe-tsugliani --pretty=colors --print=hb "$@";
+    http --session=vcloud-coe-tsugliani --pretty colors --print hb "$@";
 }
 
 alias st='open -a /Applications/Sublime\ Text\ 2.app/Contents/MacOS/Sublime\ Text\ 2'
