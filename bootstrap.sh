@@ -18,7 +18,7 @@ ln -s $dotfiles/tmux/tmux.conf $HOME/.tmux.conf
 ln -s $dotfiles/vim/vimrc $HOME/.vimrc
 
 # SUBLIME TEXT Config (Sublime Text 2.x)
-SublimeTextPackagesDir="$HOME/Library/Application Support/Sublime Text 2/Packages"
+SublimeTextPackagesDir="$HOME/Library/Application Support/Sublime Text 3/Packages"
 mkdir -vp "$SublimeTextPackagesDir/tsugliani-colorscheme"
 ln -s $dotfiles/SublimeText/tsugliani-colorscheme.tmTheme "$SublimeTextPackagesDir/tsugliani-colorscheme/"
 rm -vf "$SublimeTextPackagesDir/User/Preferences.sublime-settings"

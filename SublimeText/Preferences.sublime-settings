@@ -1,9 +1,12 @@
 {
-	"color_scheme": "Packages/tsugliani-colorscheme/tsugliani-colorscheme.tmTheme",
 	"font_size": 13.0,
 	"ignored_packages":
 	[
 		"Vintage"
 	],
-	"theme": "Spacegray Eighties.sublime-theme"
+	"rulers":
+	[
+		80
+	],
+	"theme": "carbonight-contrast.sublime-theme"
 }
