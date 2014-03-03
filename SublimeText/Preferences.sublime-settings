@@ -1,12 +1,18 @@
 {
+	"color_scheme": "Packages/User/tsugliani-colorscheme (SL).tmTheme",
 	"font_size": 13.0,
+	"highlight_line": true,
 	"ignored_packages":
 	[
 		"Vintage"
 	],
+	"margin": 6,
 	"rulers":
 	[
 		80
 	],
-	"theme": "carbonight-contrast.sublime-theme"
+	"tab_size": 2,
+	"theme": "darkside.sublime-theme",
+	"translate_tabs_to_spaces": true,
+	"trim_trailing_white_space_on_save": true
 }
