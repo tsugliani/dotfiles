@@ -47,7 +47,7 @@ source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source $ZSH/oh-my-zsh.sh
 
 # Customize to your needs...
-export PATH=:$HOME/.rvm/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
+export PATH=:$HOME/bin:$HOME/.rvm/bin:/usr/local/Cellar/git/1.9.3/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
 
 function http-vcloud-login {
     # https://vcloud.tsugliani.fr tsugliani@coe login helper
@@ -67,3 +67,6 @@ alias st='open -a /Applications/Sublime\ Text.app/Contents/MacOS/Sublime\ Text'
 
 export LANG=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+
+unset $TMUX
+tmux

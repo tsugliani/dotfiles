@@ -1,10 +1,11 @@
 {
 	"color_scheme": "Packages/User/tsugliani-colorscheme (SL).tmTheme",
-	"font_size": 13.0,
+	"font_size": 12.0,
 	"highlight_line": true,
 	"ignored_packages":
 	[
-		"Vintage"
+		"Vintage",
+		"Markdown"
 	],
 	"margin": 6,
 	"rulers":
