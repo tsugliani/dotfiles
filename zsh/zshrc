@@ -50,7 +50,8 @@ source /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source $ZSH/oh-my-zsh.sh
 
 # Customize to your needs...
-export PATH=$PATH:/usr/local/bin:$HOME/.rvm/bin:/bin:/usr/sbin:/sbin:/usr/bin
+export PATH=/usr/local/bin:/usr/local/sbin:$HOME/.rvm/bin:/bin:/usr/sbin:/sbin:/usr/bin:$PATH
+
 
 function http-vcloud-login {
     # https://vcloud.tsugliani.fr tsugliani@coe login helper
@@ -72,4 +73,5 @@ export LANG=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
 
 unset $TMUX
+# tmux attach -t iCloudDev || tmux new -s CloudDev
 tmux
