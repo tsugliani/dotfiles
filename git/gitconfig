@@ -3,7 +3,7 @@
   email = timo.sugliani@gmail.com
 [core]
   excludesfile = /Users/tsugliani/.gitignore_global
-  editor = /Applications/Atom.app/Contents/MacOS/Atom
+  editor = atom --wait
 [difftool "sourcetree"]
   cmd = opendiff \"$LOCAL\" \"$REMOTE\"
   path =
