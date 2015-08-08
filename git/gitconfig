@@ -3,7 +3,7 @@
 	email = timo.sugliani@gmail.com
 [core]
 	excludesfile = /Users/tsugliani/.gitignore_global
-	editor = /Applications/Sublime\\ Text\\ 2.app/Contents/SharedSupport/bin/subl -n -w
+    editor = /Applications/Atom.app/Contents/MacOS/Atom 
 [difftool "sourcetree"]
 	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
 	path = 

@@ -72,6 +72,6 @@ alias st='open -a "Sublime Text"'
 export LANG=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
 
-unset $TMUX
+#unset $TMUX
 # tmux attach -t iCloudDev || tmux new -s CloudDev
-tmux
+#tmux
