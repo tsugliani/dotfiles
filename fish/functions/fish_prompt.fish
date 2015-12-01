@@ -5,6 +5,11 @@
 # - Current directory name
 # - Git branch and dirty state (if inside a git repo)
 
+function fish_title
+    echo "Terminal"
+end
+
+
 function _git_branch_name
   echo (command git symbolic-ref HEAD ^/dev/null | sed -e 's|^refs/heads/||')
 end
@@ -44,13 +49,15 @@ function fish_prompt
   #if set -q VIRTUAL_ENV
   #    echo -n -s (set_color -b cyan black) '[' (basename "$VIRTUAL_ENV") ']' $normal ' '
   #end
-  if test $CMD_DURATION -gt (math "1000 * 5")
-    set secs (math "$CMD_DURATION / 1000")
-    set_color yellow
-    echo -n "ExecTime: $secs"
-    echo -n "s"
-    set_color normal
-    echo -n " | "
+  if test $CMD_DURATION
+    if test $CMD_DURATION -gt (math "1000 * 5")
+      set secs (math "$CMD_DURATION / 1000")
+      set_color yellow
+      echo -n "ExecTime: $secs"
+      echo -n "s"
+      set_color normal
+      echo -n " | "
+    end
   end
   # Print pwd or full path
   echo -n -s $cwd $normal
