@@ -4,6 +4,7 @@
 [core]
   excludesfile = /Users/tsugliani/.gitignore_global
   editor = atom --wait
+
 [difftool "sourcetree"]
   cmd = opendiff \"$LOCAL\" \"$REMOTE\"
   path =
@@ -16,3 +17,8 @@
   ui = true
 [credential]
   helper = osxkeychain
+[alias]
+	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+	ll = log --stat --abbrev-commit
+[pull]
+	rebase = true
