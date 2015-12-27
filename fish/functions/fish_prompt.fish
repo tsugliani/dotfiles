@@ -22,10 +22,16 @@ function de
   /Applications/Docker/Docker\ Quickstart\ Terminal.app/Contents/Resources/Scripts/start.sh
 end
 
-function fcd
-    rm -rf "$argv.gif"
-    ffmpeg -i "$argv" -r 10 -f gif - | \
-      gifsicle --optimize=3 --delay=3 > "$argv.gif"
+function gl
+  git lg
+end
+
+function glo
+  git ll
+end
+
+function cat
+  pygmentize -g "$argv"
 end
 
 function fish_prompt
