@@ -34,52 +34,72 @@ function cat
   pygmentize -g "$argv"
 end
 
+function git_stuff
+  set -l bold (tput bold)
+  set -l reset (tput sgr0)
 
-function fish_prompt
-  set -l cyan (set_color cyan)
-  set -l yellow (set_color yellow)
-  set -l red (set_color red)
-  set -l blue (set_color blue)
-  set -l green (set_color green)
-  set -l normal (set_color normal)
-
-  set -l cwd $blue(pwd | sed "s:^$HOME:~:")
-
-  # Output the prompt, left to right
-
-  # Add a newline before new prompts
-  # echo -e ''
-
-  # Display [venvname] if in a virtualenv
-  #if set -q VIRTUAL_ENV
-  #    echo -n -s (set_color -b cyan black) '[' (basename "$VIRTUAL_ENV") ']' $normal ' '
-  #end
-  if test $CMD_DURATION
-    if test $CMD_DURATION -gt (math "1000 * 5")
-      set secs (math "$CMD_DURATION / 1000")
-      set_color yellow
-      echo -n "ExecTime: $secs"
-      echo -n "s"
-      set_color normal
-      echo -n " | "
-    end
-  end
-  # Print pwd or full path
-  echo -n -s $cwd $normal
-
+  # Solarized colors, taken from http://git.io/solarized-colors.
+  set -l black (tput setaf 0)
+  set -l blue (tput setaf 33)
+  set -l cyan (tput setaf 37)
+  set -l green (tput setaf 64)
+  set -l orange (tput setaf 166)
+  set -l purple (tput setaf 125)
+  set -l red (tput setaf 124)
+  set -l violet (tput setaf 61)
+  set -l white (tput setaf 15)
+  set -l yellow (tput setaf 136)
   # Show git branch and status
   if [ (_git_branch_name) ]
     set -l git_branch (_git_branch_name)
 
     if [ (_git_is_dirty) ]
-      set git_info '(' $yellow $git_branch "±" $normal ')'
+      set git_info $bold $violet $git_branch $blue ' [±]'
     else
-      set git_info '(' $green $git_branch $normal ')'
+      set git_info $bold $violet $git_branch
     end
-    echo -n -s ' · ' $git_info $normal
+    echo -n -s $white ' on ' $git_info $reset
   end
+end
+
+function fish_prompt
+  tput sgr0; # reset colors
+  set -l bold (tput bold)
+  set -l reset (tput sgr0)
+
+  # Solarized colors, taken from http://git.io/solarized-colors.
+  set -l black (tput setaf 0)
+  set -l blue (tput setaf 33)
+  set -l cyan (tput setaf 37)
+  set -l green (tput setaf 64)
+  set -l orange (tput setaf 166)
+  set -l purple (tput setaf 125)
+  set -l red (tput setaf 124)
+  set -l violet (tput setaf 61)
+  set -l white (tput setaf 15)
+  set -l yellow (tput setaf 136)
+
+
+
+  set -l cwd (pwd | sed "s:^$HOME:~:")
+  # Print pwd or full path
 
   # Terminate with a nice prompt char
   # echo -e ''
-  echo -e -n -s $prompt_color ' ⟩ ' $normal
+  set -l username (whoami)
+  set -l hostname (hostname -s)
+
+  echo -n -s "$bold$orange$username$white at $yellow$hostname$white in $green$cwd"
+  git_stuff
+  echo
+  if test $CMD_DURATION
+    if test $CMD_DURATION -gt (math "1000 * 5")
+      set secs (math "$CMD_DURATION / 1000")
+      set_color yellow
+      echo -n "$secs"
+      echo -n "s"
+      echo -n $white "- "
+    end
+  end
+  echo -n -s "$bold$white$prompt_color⟩ $reset"
 end
