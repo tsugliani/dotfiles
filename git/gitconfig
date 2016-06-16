@@ -1,6 +1,7 @@
 [user]
   name = Timo Sugliani
   email = timo.sugliani@gmail.com
+  signingkey = B94B68BC
 [core]
   excludesfile = /Users/tsugliani/.gitignore_global
   editor = atom --wait
