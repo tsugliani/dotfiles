@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+{{ if eq .chezmoi.os "linux" -}}
+# --- Linux: apt packages ---
+APT_PACKAGES=(
+{{- range (.packages.linux.apt | default list) }}
+  {{ . | quote }}
+{{- end }}
+)
+
+if (( ${#APT_PACKAGES[@]} > 0 )); then
+  sudo apt-get update -qq
+  sudo apt-get install -y --no-install-recommends "${APT_PACKAGES[@]}"
+fi
+
+{{ end -}}
+
+{{- if or (eq .chezmoi.os "darwin") (gt (len (.packages.linux.homebrew | default list)) 0) -}}
+# --- Homebrew packages ---
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -x /usr/local/bin/brew ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+elif [[ -x "$HOME/.linuxbrew/bin/brew" ]]; then
+  eval "$("$HOME/.linuxbrew/bin/brew" shellenv)"
+else
+  echo "brew not found"
+  exit 1
+fi
+
+TMP_BREWFILE="$(mktemp)"
+cleanup() { rm -f "$TMP_BREWFILE"; }
+trap cleanup EXIT
+
+cat > "$TMP_BREWFILE" <<'BREWEOF'
+{{- if eq .chezmoi.os "linux" }}
+{{- range (.packages.linux.homebrew | default list) }}
+brew {{ . | quote }}
+{{- end }}
+{{- else if eq .chezmoi.os "darwin" }}
+{{- range (.packages.darwin.homebrew | default list) }}
+brew {{ . | quote }}
+{{- end }}
+{{- end }}
+BREWEOF
+
+BREW_REPO="$(brew --repository 2>/dev/null)"
+if [[ -n "$BREW_REPO" ]] && git -C "$BREW_REPO" remote get-url origin &>/dev/null; then
+  brew update
+fi
+brew bundle --file="$TMP_BREWFILE"
+
+{{ end -}}

@@ -1,0 +1,43 @@
+# Set old binding for elderly screen users
+unbind C-b
+set -g prefix C-a
+bind C-a send-prefix
+
+# True color support
+set -g default-terminal "tmux-256color"
+set -ga terminal-overrides ",xterm-256color:Tc"
+
+# Options
+set -g mouse on
+set -g history-limit 100000
+set -g default-shell /bin/zsh
+set -g base-index 1
+setw -g pane-base-index 1
+set -g renumber-windows on
+
+# Visual options for PuttyTray / external notifications
+set-option -g bell-action any
+set-option -g visual-bell off
+
+# Panes
+bind | split-window -h
+bind - split-window -v
+
+bind r source-file ~/.tmux.conf \; display-message "Reloaded tmux config!"
+
+# Configure the catppuccin plugin
+set -g @catppuccin_flavor "mocha"
+set -g @catppuccin_window_status_style "basic"
+
+set -g status-right-length 100
+set -g status-left-length 100
+
+set -gq @catppuccin_window_text " #W"
+set -gq @catppuccin_window_current_text " #W"
+
+set -g status-left ""
+set -gq @catppuccin_status_left_separator "█"
+
+set -g status-right "#{E:@catppuccin_status_application}"
+
+run ~/.tmux/plugins/catppuccin/catppuccin.tmux

@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+{{ if eq .chezmoi.os "linux" -}}
+# Fix permissions on the shared Linux Homebrew installation so that any user
+# in the 'users' group can run 'brew install' without sudo.
+#
+# What this does:
+#   chgrp -R users   — group-owns everything under linuxbrew by 'users'
+#   chmod -R g+rwX   — grants group read/write on files, read/execute on dirs
+#   find ... g+s     — sets the setgid bit on every directory so that new
+#                      files/dirs created by brew inherit the 'users' group
+#
+# Requires: the running user is in the 'users' group and has sudo.
+# Idempotent: safe to re-run; only mutates what differs.
+
+LINUXBREW="/home/linuxbrew/.linuxbrew"
+
+if [[ ! -d "$LINUXBREW" ]]; then
+  echo "Homebrew not found at $LINUXBREW — skipping permissions fix."
+  exit 0
+fi
+
+echo "Fixing Homebrew permissions for multi-user access..."
+sudo chown -R root:users "$LINUXBREW"
+sudo chmod -R g+rwX "$LINUXBREW"
+# Setgid on directories so new files/dirs inherit the 'users' group
+sudo find "$LINUXBREW" -type d -exec chmod g+s {} +
+# Make git itself use group permissions for all future objects in this repo,
+# so 'brew update' / 'brew install' by any group member stays group-writable.
+# Run as the repo owner to satisfy git's safe.directory check.
+BREW_OWNER=$(stat -c %U "$LINUXBREW/Homebrew")
+sudo -u "$BREW_OWNER" git -C "$LINUXBREW/Homebrew" config core.sharedRepository group
+echo "Done."
+{{ else -}}
+# macOS: Homebrew is installed per-user at /opt/homebrew or /usr/local.
+# No shared permission fix needed.
+: # no-op
+{{ end -}}

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+USE_OP="{{ .use_1password | default false }}"
+if [[ "$USE_OP" != "true" ]]; then
+  echo "1Password support is disabled in .chezmoidata/settings.yaml (use_1password: false)"
+  exit 0
+fi
+
+if ! command -v op >/dev/null 2>&1; then
+  echo "op CLI not found"
+  exit 1
+fi
+
+mkdir -p "$HOME/.config/zsh/local" "$HOME/.ssh"
+
+TEMPLATE_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}/op/templates"
+
+if [[ ! -d "$TEMPLATE_ROOT" ]]; then
+  echo "template directory not found: $TEMPLATE_ROOT"
+  exit 1
+fi
+
+op inject -i "$TEMPLATE_ROOT/gitconfig.1password.tpl" -o "$HOME/.gitconfig.1password"
+op inject -i "$TEMPLATE_ROOT/ssh-config.1password.tpl" -o "$HOME/.ssh/config.1password"
+op inject -i "$TEMPLATE_ROOT/zsh-1password.tpl" -o "$HOME/.config/zsh/local/1password.zsh"
+
+chmod 600 "$HOME/.gitconfig.1password" "$HOME/.ssh/config.1password" "$HOME/.config/zsh/local/1password.zsh"
+echo "Rendered 1Password-backed local files."

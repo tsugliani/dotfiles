@@ -1,0 +1,11 @@
+{{- $name := promptString "Git full name" (dig "git" "name" "Your Name" .) -}}
+{{- $email := promptString "Git email" (dig "git" "email" "you@example.com" .) -}}
+{{- $use1password := promptBool "Enable 1Password (y/n)" (dig "use_1password" false .) -}}
+
+[data.git]
+    name = {{ $name | quote }}
+    email = {{ $email | quote }}
+
+[data]
+    use_1password = {{ $use1password }}
+    install_1password_cli = {{ $use1password }}

@@ -1,0 +1,90 @@
+# Environment
+export XDG_CONFIG_HOME="${HOME}/.config"
+export XDG_DATA_HOME="${HOME}/.local/share"
+export XDG_CACHE_HOME="${HOME}/.cache"
+export EDITOR="nvim"
+export VISUAL="nvim"
+export PAGER="less"
+export ZSH_DISABLE_COMPFIX=true
+export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
+
+# Homebrew
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -x /usr/local/bin/brew ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+elif [[ -x "$HOME/.linuxbrew/bin/brew" ]]; then
+  eval "$("$HOME/.linuxbrew/bin/brew" shellenv)"
+fi
+
+# Performance optimizations
+DISABLE_MAGIC_FUNCTIONS="true"
+DISABLE_COMPFIX="true"
+skip_global_compinit=1
+
+# Disable Oh My Zsh auto-update — chezmoi manages the install, not OMZ itself
+DISABLE_AUTO_UPDATE="true"
+
+# Completions (once per day, skip insecure dir check)
+autoload -Uz compinit
+if [[ -f ~/.zcompdump ]] && [[ $(date +'%j') == $(date -r ~/.zcompdump +'%j' 2>/dev/null) ]]; then
+    compinit -C
+else
+    compinit -u
+fi
+
+# Path to your Oh My Zsh installation
+export ZSH="$HOME/.oh-my-zsh"
+
+# Theme that will be used in the console (when not going through SSH)
+# it's to avoid the nerd-fonts symbols in the prompt
+ZSH_THEME="af-magic"
+
+plugins=(
+  git
+  zsh-autosuggestions
+  zsh-syntax-highlighting
+)
+
+# Load Oh My Zsh
+source $ZSH/oh-my-zsh.sh
+
+# Aliases
+alias c="batcat"
+alias ip="ip -c"
+alias duf="duf -only local"
+alias diff="colordiff"
+alias ll="eza -l --group-directories-first --icons"
+alias la="eza -la --group-directories-first --icons"
+alias ls="eza"
+alias cat="bat --paging=never"
+alias g="git"
+alias v="nvim"
+alias tm="tmux"
+alias rg="rg --smart-case"
+alias lt="eza --tree --level=2 --icons"
+alias llo="eza -l --octal-permissions --group-directories-first --icons"
+alias llr="eza -l --sort=modified --reverse --icons"
+alias ltr="eza --tree --level=2 --sort=modified --reverse --icons"
+alias brewup="brew update && brew upgrade && brew cleanup -s"
+alias brewout="brew outdated"
+alias brewdr="brew doctor"
+alias brewleaf="brew leaves"
+
+# Source additional config
+[[ -f ~/.config/zsh/functions.zsh ]] && source ~/.config/zsh/functions.zsh
+
+# Shell integrations
+command -v direnv >/dev/null 2>&1 && eval "$(direnv hook zsh)"
+command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init zsh)"
+command -v atuin >/dev/null 2>&1 && eval "$(atuin init zsh --disable-up-arrow)"
+[[ -f ~/.fzf.zsh ]] && source ~/.fzf.zsh
+
+{{- if .use_1password | default false }}
+# 1Password
+[[ -f ~/.config/zsh/local/1password.zsh ]] && source ~/.config/zsh/local/1password.zsh
+{{- end }}
+
+command -v oh-my-posh >/dev/null 2>&1 && eval "$(oh-my-posh init zsh --config ~/.config/oh-my-posh/zbox.omp.json)"

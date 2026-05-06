@@ -1,0 +1,51 @@
+[user]
+    name = {{ .git.name | default "Your Name" | quote }}
+    email = {{ .git.email | default "you@example.com" | quote }}
+
+[core]
+    editor = nvim
+    excludesfile = ~/.gitignore_global
+
+[init]
+    defaultBranch = main
+
+[pull]
+    rebase = false
+
+[delta]
+    navigate = true
+    light = false
+
+[interactive]
+    diffFilter = delta --color-only
+
+[gpg]
+    format = ssh
+
+[commit]
+    gpgsign = true
+
+{{- if .use_1password | default false }}
+# 1Password mode:
+# - keep the base config static and safe
+# - optionally include a machine-local generated file rendered via op inject
+[include]
+    path = ~/.gitconfig.1password
+{{- else }}
+# Non-1Password mode: point signing at a normal local public key
+[user]
+    signingkey = {{ .ssh.default_identity_public_key | default "~/.ssh/id_ed25519.pub" | quote }}
+{{- end }}
+
+{{- if eq .chezmoi.os "darwin" }}
+[credential]
+    helper = osxkeychain
+{{- end }}
+
+{{- if eq .chezmoi.os "linux" }}
+[credential]
+    helper = cache --timeout=3600
+
+[safe]
+    directory = /home/linuxbrew/.linuxbrew/Homebrew
+{{- end }}

@@ -1,0 +1,145 @@
+#!/usr/bin/env bash
+# No set -e — we want to collect all results before exiting.
+set -uo pipefail
+
+BOLD='\033[1m'
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+RESET='\033[0m'
+
+FAILED=0
+COL=32  # label column width
+SEP=$(printf '─%.0s' {1..64})
+
+print_header() {
+  echo ""
+  echo -e "  ${SEP}"
+  echo -e "   ${BOLD}chezmoi · prerequisite check${RESET}"
+  echo -e "  ${SEP}"
+  echo ""
+  printf "  %-${COL}s  %-9s  %s\n" "Requirement" "Status" "Detail"
+  echo "  $(printf '─%.0s' {1..64})"
+}
+
+print_row() {
+  local label="$1"
+  local status="$2"   # pass | fail | warn
+  local detail="${3:-}"
+  local icon
+  case "$status" in
+    pass) icon="${GREEN}✓  ok  ${RESET}" ;;
+    fail) icon="${RED}✗  FAIL${RESET}"; FAILED=1 ;;
+    warn) icon="${YELLOW}⚠  warn${RESET}" ;;
+  esac
+  printf "  %-${COL}s  ${icon}  %s\n" "$label" "$detail"
+}
+
+print_footer() {
+  echo ""
+  echo "  $(printf '─%.0s' {1..64})"
+  if [[ "$FAILED" -eq 0 ]]; then
+    echo -e "  ${GREEN}${BOLD}All prerequisites satisfied.${RESET}"
+  else
+    echo -e "  ${RED}${BOLD}Prerequisites missing — fix the above and re-run chezmoi apply.${RESET}"
+  fi
+  echo "  $(printf '─%.0s' {1..64})"
+  echo ""
+}
+
+print_header
+
+# ── not root ──────────────────────────────────────────────────────────────────
+# chezmoi must run as a normal user — installs land under $HOME, shared
+# linuxbrew relies on the 'users' group, and oh-my-zsh/tmux plugins clone
+# into the user's home. Running as root creates root-owned files the real
+# user can't manage and breaks the shared-brew permission model. Bail out
+# early; the remaining checks only make sense for a real user account.
+if [[ "$(id -u)" -eq 0 ]]; then
+  print_row "not running as root" fail "use a normal user with sudo + users group"
+  print_footer
+  exit 1
+fi
+print_row "not running as root" pass "uid=$(id -u) ($USER)"
+
+# ── group membership ──────────────────────────────────────────────────────────
+# sudo/wheel/admin grants privilege escalation; users group grants shared
+# linuxbrew access. `sudo -n true` would require NOPASSWD, too strict since
+# install scripts can prompt interactively.
+if command -v sudo >/dev/null 2>&1 && id -nG "$USER" | grep -qwE 'sudo|wheel|admin'; then
+  print_row "sudo access" pass "member of $(id -nG "$USER" | tr ' ' '\n' | grep -E '^(sudo|wheel|admin)$' | paste -sd, -)"
+else
+  print_row "sudo access" fail "usermod -aG sudo $USER  (then re-login)"
+fi
+{{- if eq .chezmoi.os "linux" }}
+if id -nG "$USER" | grep -qw users; then
+  print_row "user in 'users' group" pass "$(id -nG "$USER" | tr ' ' ',')"
+else
+  print_row "user in 'users' group" fail "usermod -aG users $USER  (then re-login)"
+fi
+{{- end }}
+
+# ── zsh ───────────────────────────────────────────────────────────────────────
+if p=$(command -v zsh 2>/dev/null); then
+  print_row "zsh" pass "$p"
+else
+  print_row "zsh" fail "apt install zsh"
+fi
+
+# ── curl ──────────────────────────────────────────────────────────────────────
+if p=$(command -v curl 2>/dev/null); then
+  print_row "curl" pass "$p"
+else
+  print_row "curl" fail "apt install curl"
+fi
+
+# ── git ───────────────────────────────────────────────────────────────────────
+if p=$(command -v git 2>/dev/null); then
+  print_row "git" pass "$p"
+else
+  print_row "git" fail "apt install git"
+fi
+
+# ── internet ──────────────────────────────────────────────────────────────────
+if curl -fsS --max-time 5 https://github.com >/dev/null 2>&1; then
+  print_row "internet (github.com)" pass ""
+else
+  print_row "internet (github.com)" fail "check network connectivity"
+fi
+
+{{ if eq .chezmoi.os "linux" -}}
+# ── apt-get ───────────────────────────────────────────────────────────────────
+if p=$(command -v apt-get 2>/dev/null); then
+  print_row "apt-get" pass "$p"
+else
+  print_row "apt-get" fail "unsupported Linux distribution"
+fi
+
+# ── homebrew ──────────────────────────────────────────────────────────────────
+BREW="/home/linuxbrew/.linuxbrew/bin/brew"
+if [[ -x "$BREW" ]]; then
+  print_row "homebrew (linuxbrew)" pass "$("$BREW" --version 2>/dev/null | head -1)"
+else
+  print_row "homebrew (linuxbrew)" warn "not found — will be installed by chezmoi"
+fi
+
+{{ else if eq .chezmoi.os "darwin" -}}
+# ── xcode CLI tools ───────────────────────────────────────────────────────────
+if xcode-select -p >/dev/null 2>&1; then
+  print_row "xcode CLI tools" pass "$(xcode-select -p)"
+else
+  print_row "xcode CLI tools" warn "not installed — will be installed"
+fi
+
+# ── homebrew ──────────────────────────────────────────────────────────────────
+if p=$(command -v brew 2>/dev/null); then
+  print_row "homebrew" pass "$(brew --version 2>/dev/null | head -1)"
+else
+  print_row "homebrew" warn "not found — will be installed by chezmoi"
+fi
+
+{{ end -}}
+
+print_footer
+
+[[ "$FAILED" -eq 0 ]] || exit 1

@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# All tools are cloned into the user's home directory for a self-contained,
+# idempotent setup. If a path is a symlink (e.g. pointing to /usr/share/),
+# it is replaced with a real user-owned clone.
+
+# Remove stale /usr/share symlinks that may have been seeded by /etc/skel.
+# .poshthemes is not used by this config (oh-my-posh uses ~/.config/oh-my-posh/).
+for stale in "$HOME/.poshthemes" "$HOME/.oh-my-zsh"; do
+  if [[ -L "$stale" ]]; then
+    rm "$stale"
+  fi
+done
+
+clone_if_needed() {
+  local dir="$1" repo="$2"
+  # Replace any symlink (e.g. /usr/share) with a real clone
+  if [[ -L "$dir" ]]; then
+    rm "$dir"
+  fi
+  if [[ ! -d "$dir" ]]; then
+    git clone --depth=1 "$repo" "$dir"
+  fi
+}
+
+# --- Oh My Zsh ---
+OMZ_DIR="$HOME/.oh-my-zsh"
+clone_if_needed "$OMZ_DIR" "https://github.com/ohmyzsh/ohmyzsh.git"
+
+# --- Oh My Zsh custom plugins ---
+ZSH_CUSTOM="${OMZ_DIR}/custom"
+clone_if_needed "$ZSH_CUSTOM/plugins/zsh-autosuggestions" \
+  "https://github.com/zsh-users/zsh-autosuggestions.git"
+clone_if_needed "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" \
+  "https://github.com/zsh-users/zsh-syntax-highlighting.git"
+
+# --- TPM (Tmux Plugin Manager) ---
+mkdir -p "$HOME/.tmux/plugins"
+clone_if_needed "$HOME/.tmux/plugins/tpm" \
+  "https://github.com/tmux-plugins/tpm.git"
+
+# --- Catppuccin for Tmux ---
+clone_if_needed "$HOME/.tmux/plugins/catppuccin" \
+  "https://github.com/catppuccin/tmux.git"
+
+# --- Default login shell ---
+# Switch the user's login shell to zsh if it isn't already. Uses sudo so it
+# works non-interactively (plain `chsh` prompts for a password on Debian).
+ZSH_BIN="$(command -v zsh || true)"
+if [[ -n "$ZSH_BIN" ]]; then
+  CURRENT_SHELL="$(getent passwd "$USER" | cut -d: -f7)"
+  if [[ "$CURRENT_SHELL" != "$ZSH_BIN" ]]; then
+    grep -qxF "$ZSH_BIN" /etc/shells || echo "$ZSH_BIN" | sudo tee -a /etc/shells >/dev/null
+    sudo chsh -s "$ZSH_BIN" "$USER"
+    echo "Login shell changed to $ZSH_BIN — log out and back in for it to take effect."
+  fi
+fi
