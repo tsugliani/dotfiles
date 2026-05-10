@@ -3,17 +3,17 @@ git:
   email: "timo.sugliani@gmail.com"
 
 ssh:
-  default_identity_public_key: "~/.ssh/id_ed25519.pub"
-  work_identity_public_key: "~/.ssh/id_ed25519_work.pub"
+  personal_pubkey: "~/.ssh/id_ed25519.pub"
+  work_pubkey:     "~/.ssh/id_ed25519_work.pub"
 
 use_1password: false
 
 op:
   vault: "Private"
-  ssh_default_item: "SSH Personal"
-  ssh_work_item: "SSH Work"
-  github_item: "GitHub"
-  work_github_item: "GitHub Work"
+  ssh_personal_item:    "SSH Personal"
+  ssh_work_item:        "SSH Work"
+  github_personal_item: "GitHub"
+  github_work_item:     "GitHub Work"
 
 packages:
   linux:

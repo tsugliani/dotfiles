@@ -1,7 +1,7 @@
 [user]
     name = {{ .git.name | default "Timo Sugliani" | quote }}
     email = {{ .git.email | default "timo.sugliani@gmail.com" | quote }}
-    signingkey = {{ .ssh.default_identity_public_key | default "~/.ssh/id_ed25519.pub" | quote }}
+    signingkey = {{ .ssh.personal_pubkey | default "~/.ssh/id_ed25519.pub" | quote }}
 
 [core]
     editor = nvim

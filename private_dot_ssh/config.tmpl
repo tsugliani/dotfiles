@@ -8,7 +8,7 @@ Host *
 {{- if .use_1password | default false }}
   IdentityAgent ~/.1password/agent.sock
 {{- else }}
-  IdentityFile {{ .ssh.default_identity_public_key | default "~/.ssh/id_ed25519.pub" | replace ".pub" "" }}
+  IdentityFile {{ .ssh.personal_pubkey | default "~/.ssh/id_ed25519.pub" | replace ".pub" "" }}
 {{- end }}
 
 {{- if eq .chezmoi.os "darwin" }}
@@ -21,18 +21,18 @@ Host github.com
   User git
 {{- if .use_1password | default false }}
   # Example: public key path downloaded/exported locally, private key remains in 1Password
-  IdentityFile {{ .ssh.default_identity_public_key | default "~/.ssh/id_ed25519.pub" }}
+  IdentityFile {{ .ssh.personal_pubkey | default "~/.ssh/id_ed25519.pub" }}
 {{- else }}
-  IdentityFile {{ .ssh.default_identity_public_key | default "~/.ssh/id_ed25519.pub" | replace ".pub" "" }}
+  IdentityFile {{ .ssh.personal_pubkey | default "~/.ssh/id_ed25519.pub" | replace ".pub" "" }}
 {{- end }}
 
 Host github-work
   HostName github.com
   User git
 {{- if .use_1password | default false }}
-  IdentityFile {{ .ssh.work_identity_public_key | default "~/.ssh/id_ed25519_work.pub" }}
+  IdentityFile {{ .ssh.work_pubkey | default "~/.ssh/id_ed25519_work.pub" }}
 {{- else }}
-  IdentityFile {{ .ssh.work_identity_public_key | default "~/.ssh/id_ed25519_work.pub" | replace ".pub" "" }}
+  IdentityFile {{ .ssh.work_pubkey | default "~/.ssh/id_ed25519_work.pub" | replace ".pub" "" }}
 {{- end }}
 
 {{- if .use_1password | default false }}
