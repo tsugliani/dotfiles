@@ -164,14 +164,34 @@ chezmoi state delete-bucket --bucket=scriptState           # Reset script run st
 chezmoi init                                               # Re-run interactive prompts
 ```
 
-## Multi-user Linux setup
+## Shared Homebrew on Linux
 
-For shared Homebrew on multi-user systems:
+This repo deliberately uses a single shared Homebrew install at `/home/linuxbrew/.linuxbrew`, owned by `root:users` with group write and the setgid bit on directories. The alternative — a per-user install in `~/.linuxbrew` — was considered and rejected.
 
-1. Homebrew directories are group-owned by `users` with group write + setgid (`run_onchange_after_09` handles this)
-2. Git `safe.directory` for Homebrew is set automatically in `.gitconfig`
-3. `DISABLE_COMPFIX=true` and `compinit -u` handle insecure directory warnings
-4. New users: add to the `users` group, copy the chezmoi source, run `chezmoi init && chezmoi apply`
+### Why shared, not per-user
+
+- **Bottles only ship for `/home/linuxbrew/.linuxbrew`.** Any other prefix forces Homebrew on Linux to build from source. A fresh `neovim` install would pull a full Python + gcc toolchain and take 30–60 min instead of seconds. Bottles are non-negotiable — that pins the install path.
+- **Space efficiency.** One cellar (~1.5 GB on a typical setup) shared by all users, instead of N near-identical copies.
+- **Adding a user is one command.** `sudo usermod -aG sudo,users $newuser` and they can `brew install` immediately — no per-user bootstrap, no duplicated toolchain, no second 30-minute build cycle.
+
+### How it's wired up
+
+1. `run_onchange_after_09-fix-homebrew-permissions` chowns the tree to `root:users`, sets `g+rwX`, and applies setgid to every directory so files created by future `brew install` calls inherit the `users` group.
+2. `safe.directory` for the Homebrew git repo is set automatically in `.gitconfig` (Linux only).
+3. `DISABLE_COMPFIX=true` and `compinit -u` in `.zshrc` silence zsh's "insecure directory" warnings on the group-writable paths.
+4. The prerequisite check fails apply if `$USER` isn't in the `users` group — fix with `sudo usermod -aG users $USER` and re-login.
+
+### Adding another user to the box
+
+> ⚠️ **Security warning — trusted users / dev boxes only.**
+> The chezmoi bootstrap requires `sudo` (apt installs, Homebrew permission fix). The snippet below adds new users to the `sudo` group, which grants **full root access** to the machine. Only do this for test/dev environments or users you fully trust. On shared or production hosts, provision system packages and the `/home/linuxbrew` permissions out-of-band, give the new user `users` group only, and run a stripped-down apply that skips the privileged scripts.
+
+```bash
+sudo usermod -aG sudo,users $newuser           # ⚠️ sudo = full root; trusted users only
+sudo cp -r ~/.local/share/chezmoi /home/$newuser/.local/share/
+sudo chown -R "$newuser:$newuser" /home/$newuser/.local
+sudo -iu "$newuser" chezmoi init && sudo -iu "$newuser" chezmoi apply
+```
 
 ## Customization
 
