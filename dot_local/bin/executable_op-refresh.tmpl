@@ -24,6 +24,8 @@ fi
 op inject -i "$TEMPLATE_ROOT/gitconfig.1password.tpl" -o "$HOME/.gitconfig.1password"
 op inject -i "$TEMPLATE_ROOT/ssh-config.1password.tpl" -o "$HOME/.ssh/config.1password"
 op inject -i "$TEMPLATE_ROOT/zsh-1password.tpl" -o "$HOME/.config/zsh/local/1password.zsh"
+op inject -i "$TEMPLATE_ROOT/id_ed25519_personal.tpl" -o "$HOME/.ssh/id_ed25519_personal"
+op inject -i "$TEMPLATE_ROOT/id_ed25519_zpods.tpl" -o "$HOME/.ssh/id_ed25519_zpods"
 
-chmod 600 "$HOME/.gitconfig.1password" "$HOME/.ssh/config.1password" "$HOME/.config/zsh/local/1password.zsh"
+chmod 600 "$HOME/.gitconfig.1password" "$HOME/.ssh/config.1password" "$HOME/.config/zsh/local/1password.zsh" "$HOME/.ssh/id_ed25519_personal" "$HOME/.ssh/id_ed25519_zpods"
 echo "Rendered 1Password-backed local files."

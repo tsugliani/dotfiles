@@ -4,9 +4,8 @@ Host *
   HashKnownHosts yes
   IdentitiesOnly yes
   IgnoreUnknown UseKeychain
-
 {{- if .use_1password | default false }}
-  IdentityAgent ~/.1password/agent.sock
+  IdentityFile ~/.ssh/id_ed25519_personal
 {{- else }}
   IdentityFile {{ .ssh.personal_pubkey | default "~/.ssh/id_ed25519.pub" | replace ".pub" "" }}
 {{- end }}
@@ -20,19 +19,9 @@ Host github.com
   HostName github.com
   User git
 {{- if .use_1password | default false }}
-  # Example: public key path downloaded/exported locally, private key remains in 1Password
-  IdentityFile {{ .ssh.personal_pubkey | default "~/.ssh/id_ed25519.pub" }}
+  IdentityFile ~/.ssh/id_ed25519_personal
 {{- else }}
   IdentityFile {{ .ssh.personal_pubkey | default "~/.ssh/id_ed25519.pub" | replace ".pub" "" }}
-{{- end }}
-
-Host github-work
-  HostName github.com
-  User git
-{{- if .use_1password | default false }}
-  IdentityFile {{ .ssh.work_pubkey | default "~/.ssh/id_ed25519_work.pub" }}
-{{- else }}
-  IdentityFile {{ .ssh.work_pubkey | default "~/.ssh/id_ed25519_work.pub" | replace ".pub" "" }}
 {{- end }}
 
 {{- if .use_1password | default false }}

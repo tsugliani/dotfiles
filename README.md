@@ -15,7 +15,7 @@ chezmoi init && chezmoi apply
 On first run, `chezmoi init` prompts for:
 
 - **Git full name** and **email**
-- **Enable 1Password** (y/n) — installs the CLI and enables SSH agent + secret injection
+- **Enable 1Password** (y/n) — installs the CLI and enables `op inject` secret injection
 
 After apply, reload the shell: `source ~/.zshrc`
 
@@ -56,7 +56,7 @@ All shell configuration lives in a single `~/.zshrc` (no `.zshenv`).
 - **Oh My Posh** prompt over SSH (with nerd font icons)
 - **Homebrew** shellenv sourced early in `.zshrc` (before oh-my-zsh resets PATH)
 - **Environment:** XDG dirs, EDITOR/VISUAL (nvim), PAGER (less)
-- **Shell integrations:** direnv, zoxide, atuin (history), fzf
+- **Shell integrations:** mise, zoxide, atuin (history), fzf
 - **Aliases:** `ls`/`ll`/`la` (eza), `cat`/`c` (bat), `g` (git), `v` (nvim), `tm` (tmux)
 - **Compinit** cached daily with `-u` flag and `DISABLE_COMPFIX=true` for shared Homebrew setups
 - **Helper function:** `mkcd` — create directory and cd into it
@@ -74,7 +74,7 @@ All shell configuration lives in a single `~/.zshrc` (no `.zshenv`).
 ### SSH
 
 - `IdentitiesOnly yes`, keepalive 60s, hashed known hosts
-- Host entries for `github.com` and `github-work` (personal/work split)
+- Host entry for `github.com`
 - macOS: `AddKeysToAgent yes`, `UseKeychain yes`
 
 ### Tmux
@@ -109,14 +109,17 @@ All plugins are cloned directly into the user's home — no `/usr/share` symlink
 
 ## 1Password integration
 
+This repo targets headless Linux servers and macOS, where the **1Password desktop app is not present**. Integration here is limited to the **1Password CLI** (`op inject`) for rendering secrets into local-only files. SSH agent setup on personal devices is handled out-of-band by the desktop app and is intentionally not managed by chezmoi.
+
 When enabled (`use_1password: true`):
 
 | Component | Without 1Password | With 1Password |
 |-----------|-------------------|----------------|
-| **Git signing** | Local SSH key from `settings.yaml` | Includes `~/.gitconfig.1password` |
-| **SSH auth** | `IdentityFile` with local keys | `IdentityAgent ~/.1password/agent.sock` |
+| **Git signing** | Local SSH key from `settings.yaml` | Includes `~/.gitconfig.1password` (rendered by `op inject`) |
 | **Secrets** | Not managed | `~/.config/zsh/local/1password.zsh` sourced (exports `GITHUB_TOKEN`, etc.) |
 | **CLI** | Not installed | Installed via `brew install --cask 1password-cli` |
+
+SSH authentication uses local keys in both modes (paths from `settings.yaml`).
 
 ### Refreshing 1Password-generated files
 
@@ -140,7 +143,6 @@ dot_tmux.conf.tmpl                     # Tmux config (~/.tmux.conf)
 dot_config/nvim/                       # Neovim (LazyVim) config
 dot_config/zsh/functions.zsh           # Shell helper functions
 dot_config/op/templates/               # 1Password op-inject templates
-dot_config/1Password/                  # 1Password SSH agent policy
 dot_local/bin/op-refresh.tmpl          # 1Password refresh script
 private_dot_ssh/                       # SSH config and allowed_signers templates
 run_once_before_00-install-prereqs*    # Install system prerequisites

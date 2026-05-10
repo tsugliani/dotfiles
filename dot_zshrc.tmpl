@@ -6,9 +6,13 @@ export EDITOR="nvim"
 export VISUAL="nvim"
 export PAGER="less"
 export ZSH_DISABLE_COMPFIX=true
-export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
 
-# Homebrew
+# Dedupe PATH automatically — re-sourcing this file (nested shells, tmux, etc.)
+# won't multiply entries. First occurrence wins, so prepending later removes dupes.
+typeset -U path PATH
+
+# Homebrew sets HOMEBREW_PREFIX/CELLAR/REPOSITORY, MANPATH, INFOPATH and
+# prepends its bins to PATH.
 if [[ -x /opt/homebrew/bin/brew ]]; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 elif [[ -x /usr/local/bin/brew ]]; then
@@ -18,6 +22,15 @@ elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
 elif [[ -x "$HOME/.linuxbrew/bin/brew" ]]; then
   eval "$("$HOME/.linuxbrew/bin/brew" shellenv)"
 fi
+
+# Final PATH order: ~/.local/bin, brew, system. Prepending takes advantage of
+# `typeset -U` first-wins to drop the duplicate brew entries already in PATH.
+if [[ -n "${HOMEBREW_PREFIX:-}" ]]; then
+  path=("$HOME/.local/bin" "$HOMEBREW_PREFIX/bin" "$HOMEBREW_PREFIX/sbin" $path)
+else
+  path=("$HOME/.local/bin" $path)
+fi
+export PATH
 
 # Performance optimizations
 DISABLE_MAGIC_FUNCTIONS="true"
@@ -78,7 +91,6 @@ alias brewleaf="brew leaves"
 [[ -f ~/.config/zsh/functions.zsh ]] && source ~/.config/zsh/functions.zsh
 
 # Shell integrations
-command -v direnv >/dev/null 2>&1 && eval "$(direnv hook zsh)"
 command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init zsh)"
 command -v atuin >/dev/null 2>&1 && eval "$(atuin init zsh --disable-up-arrow)"
 [[ -f ~/.fzf.zsh ]] && source ~/.fzf.zsh
