@@ -21,11 +21,27 @@ if [[ ! -d "$TEMPLATE_ROOT" ]]; then
   exit 1
 fi
 
-op inject -i "$TEMPLATE_ROOT/gitconfig.1password.tpl" -o "$HOME/.gitconfig.1password"
-op inject -i "$TEMPLATE_ROOT/ssh-config.1password.tpl" -o "$HOME/.ssh/config.1password"
 op inject -i "$TEMPLATE_ROOT/zsh-1password.tpl" -o "$HOME/.config/zsh/local/1password.zsh"
-op inject -i "$TEMPLATE_ROOT/id_ed25519_personal.tpl" -o "$HOME/.ssh/id_ed25519_personal"
-op inject -i "$TEMPLATE_ROOT/id_ed25519_zpods.tpl" -o "$HOME/.ssh/id_ed25519_zpods"
 
-chmod 600 "$HOME/.gitconfig.1password" "$HOME/.ssh/config.1password" "$HOME/.config/zsh/local/1password.zsh" "$HOME/.ssh/id_ed25519_personal" "$HOME/.ssh/id_ed25519_zpods"
+# Public keys are rendered on both OSes — not secret, and on macOS they serve
+# as the IdentityFile selector so the 1Password agent picks the right key.
+op inject -i "$TEMPLATE_ROOT/id_ssh_personal.pub.tpl" -o "$HOME/.ssh/id_ssh_personal.pub"
+op inject -i "$TEMPLATE_ROOT/id_ssh_zpods.pub.tpl" -o "$HOME/.ssh/id_ssh_zpods.pub"
+chmod 644 "$HOME/.ssh/id_ssh_personal.pub" "$HOME/.ssh/id_ssh_zpods.pub"
+
+{{- if eq .chezmoi.os "linux" }}
+# Linux (no 1Password desktop / agent): SSH private keys must exist on disk.
+op inject -i "$TEMPLATE_ROOT/id_ssh_personal.priv.tpl" -o "$HOME/.ssh/id_ssh_personal.priv"
+op inject -i "$TEMPLATE_ROOT/id_ssh_zpods.priv.tpl" -o "$HOME/.ssh/id_ssh_zpods.priv"
+
+chmod 600 \
+  "$HOME/.config/zsh/local/1password.zsh" \
+  "$HOME/.ssh/id_ssh_personal.priv" \
+  "$HOME/.ssh/id_ssh_zpods.priv"
+{{- else }}
+# macOS: the 1Password app exposes the agent socket for SSH.
+# Private keys stay in the vault — no need to render them to disk.
+chmod 600 "$HOME/.config/zsh/local/1password.zsh"
+{{- end }}
+
 echo "Rendered 1Password-backed local files."

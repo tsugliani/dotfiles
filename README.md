@@ -73,9 +73,13 @@ All shell configuration lives in a single `~/.zshrc` (no `.zshenv`).
 
 ### SSH
 
-- `IdentitiesOnly yes`, keepalive 60s, hashed known hosts
+- Keepalive 60s, hashed known hosts, `IgnoreUnknown UseKeychain` for cross-OS portability
+- `IdentitiesOnly yes` everywhere **except** macOS + 1Password mode (where the agent handles key selection)
 - Host entry for `github.com`
-- macOS: `AddKeysToAgent yes`, `UseKeychain yes`
+- macOS without 1Password: `AddKeysToAgent yes`, `UseKeychain yes` (Apple ssh-agent + Keychain)
+- macOS with 1Password: `IdentityAgent ~/.1password/agent.sock` (delegates to the 1Password app)
+- Linux with 1Password: `IdentityFile` points to keys rendered by `op-refresh` from your vault
+- zPod hosts (`*.zpod.io`, `*.zpodfactory.io`, `*.zpod.lab`, `*.cloud.lab`): use a dedicated SSH key (rendered to disk on Linux, served by the agent on macOS)
 
 ### Tmux
 
@@ -109,17 +113,18 @@ All plugins are cloned directly into the user's home — no `/usr/share` symlink
 
 ## 1Password integration
 
-This repo targets headless Linux servers and macOS, where the **1Password desktop app is not present**. Integration here is limited to the **1Password CLI** (`op inject`) for rendering secrets into local-only files. SSH agent setup on personal devices is handled out-of-band by the desktop app and is intentionally not managed by chezmoi.
+The integration behaves differently per OS, because macOS has the 1Password desktop app (with its SSH agent) while Linux servers do not. When `use_1password: true`:
 
-When enabled (`use_1password: true`):
+| | Linux (headless) | macOS (with desktop app) |
+|---|---|---|
+| **1Password CLI (`op`)** | required, used by `op-refresh` | required, used by `op-refresh` |
+| **1Password desktop app** | not available | required — provides `~/.1password/agent.sock` |
+| **Git secrets** (email, `GITHUB_TOKEN`) | rendered to `~/.gitconfig.1password` and `~/.config/zsh/local/1password.zsh` by `op-refresh` | same |
+| **SSH private keys** | rendered to `~/.ssh/id_ssh_*.priv` (mode 600) by `op-refresh` | **never written to disk** — served on demand by the 1Password agent |
+| **SSH `IdentityAgent`** | not used | `~/.1password/agent.sock` — Touch ID prompts gate every use |
+| **`~/.ssh/config.1password`** | rendered (adds zPods host block with `IdentityFile`) | not rendered (agent handles all keys) |
 
-| Component | Without 1Password | With 1Password |
-|-----------|-------------------|----------------|
-| **Git signing** | Local SSH key from `settings.yaml` | Includes `~/.gitconfig.1password` (rendered by `op inject`) |
-| **Secrets** | Not managed | `~/.config/zsh/local/1password.zsh` sourced (exports `GITHUB_TOKEN`, etc.) |
-| **CLI** | Not installed | Installed via `brew install --cask 1password-cli` |
-
-SSH authentication uses local keys in both modes (paths from `settings.yaml`).
+When `use_1password: false`, both OS fall back to local SSH keys whose paths come from `settings.yaml` (`ssh.personal_pubkey`).
 
 ### Refreshing 1Password-generated files
 

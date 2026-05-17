@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+USE_OP="{{ .use_1password | default false }}"
+
+if [[ "$USE_OP" != "true" ]]; then
+  exit 0
+fi
+
+# Source brew shellenv so brew-installed `op` is in PATH inside this subprocess.
+for brewbin in /opt/homebrew/bin/brew /usr/local/bin/brew /home/linuxbrew/.linuxbrew/bin/brew "$HOME/.linuxbrew/bin/brew"; do
+  if [[ -x "$brewbin" ]]; then
+    eval "$("$brewbin" shellenv)"
+    break
+  fi
+done
+
+if ! command -v op >/dev/null 2>&1; then
+  echo "op CLI not found — skipping op-refresh. Install 1Password CLI and re-run."
+  exit 0
+fi
+
+# If no active session, try an interactive signin. Bail (don't hang) when
+# stdin isn't a TTY, e.g. chezmoi invoked from a hook or non-interactive shell.
+if ! op whoami >/dev/null 2>&1; then
+  if [[ ! -t 0 ]]; then
+    echo "1Password not signed in and no TTY available — skipping op-refresh."
+    echo "Re-run from an interactive shell, or: eval \$(op signin) && op-refresh"
+    exit 0
+  fi
+
+  echo "1Password not signed in — running op signin..."
+  if ! eval "$(op signin)"; then
+    echo "op signin failed — skipping op-refresh."
+    echo "If no accounts are configured yet, run: op account add"
+    exit 0
+  fi
+
+  if ! op whoami >/dev/null 2>&1; then
+    echo "Signin completed but op whoami still fails — skipping op-refresh."
+    exit 0
+  fi
+fi
+
+OP_REFRESH="$HOME/.local/bin/op-refresh"
+if [[ ! -x "$OP_REFRESH" ]]; then
+  echo "op-refresh not found at $OP_REFRESH — skipping."
+  exit 0
+fi
+
+"$OP_REFRESH"

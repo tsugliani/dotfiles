@@ -13,6 +13,7 @@
 
 [push]
     default = simple
+    autoSetupRemote = true
 
 [pull]
     rebase = true
@@ -40,16 +41,6 @@
 
 [hub]
     protocol = ssh
-
-{{- if .use_1password | default false }}
-# 1Password mode:
-# - keep the base config static and safe
-# - secrets (github.token, optional email override) live in ~/.gitconfig.1password
-#   rendered via `op-refresh` (op inject). git silently ignores the include
-#   if the file doesn't exist yet, so the static signingkey above keeps signing working.
-[include]
-    path = ~/.gitconfig.1password
-{{- end }}
 
 {{- if eq .chezmoi.os "darwin" }}
 [credential]

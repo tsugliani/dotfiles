@@ -2,30 +2,51 @@ Host *
   ServerAliveInterval 60
   ServerAliveCountMax 3
   HashKnownHosts yes
-  IdentitiesOnly yes
   IgnoreUnknown UseKeychain
+  # Ghostty's xterm-ghostty terminfo isn't installed on most remote systems.
+  # Falling back to xterm-256color avoids "unknown terminal" errors from less,
+  # vim, etc. Trade-off: loses Ghostty extras (styled underlines, etc.).
+  # See https://ghostty.org/docs/help/terminfo (requires OpenSSH 8.7+).
+  SetEnv TERM=xterm-256color
+{{- if and (eq .chezmoi.os "darwin") (.use_1password | default false) }}
+  # macOS + 1Password desktop app: route SSH through the 1Password agent socket.
+  # Private keys never touch disk; each use is gated by Touch ID / app prompt.
+  IdentityAgent "{{ .op.ssh_agent_socket | default "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock" }}"
+{{- else }}
+  IdentitiesOnly yes
 {{- if .use_1password | default false }}
-  IdentityFile ~/.ssh/id_ed25519_personal
+  IdentityFile ~/.ssh/id_ssh_personal.priv
 {{- else }}
   IdentityFile {{ .ssh.personal_pubkey | default "~/.ssh/id_ed25519.pub" | replace ".pub" "" }}
 {{- end }}
-
 {{- if eq .chezmoi.os "darwin" }}
   AddKeysToAgent yes
   UseKeychain yes
+{{- end }}
 {{- end }}
 
 Host github.com
   HostName github.com
   User git
-{{- if .use_1password | default false }}
-  IdentityFile ~/.ssh/id_ed25519_personal
+{{- if and (eq .chezmoi.os "darwin") (.use_1password | default false) }}
+  # Key served by the 1Password agent (IdentityAgent set in Host *).
+{{- else if .use_1password | default false }}
+  IdentityFile ~/.ssh/id_ssh_personal.priv
 {{- else }}
   IdentityFile {{ .ssh.personal_pubkey | default "~/.ssh/id_ed25519.pub" | replace ".pub" "" }}
 {{- end }}
 
 {{- if .use_1password | default false }}
 
-# Optional machine-local generated additions rendered from op inject
-Include ~/.ssh/config.1password
+# zPod / zPodFactory hosts — always use the SSH-zPodFactory key.
+# macOS: pubkey on disk is just a selector; the 1Password agent serves the
+# private key (Touch ID gates each use). Linux: private key materialized to
+# disk by op-refresh.
+Host *.zpod.io *.zpodfactory.io *.zpod.lab *.cloud.lab
+{{- if eq .chezmoi.os "darwin" }}
+  IdentityFile ~/.ssh/id_ssh_zpods.pub
+{{- else }}
+  IdentityFile ~/.ssh/id_ssh_zpods.priv
+{{- end }}
+  IdentitiesOnly yes
 {{- end }}

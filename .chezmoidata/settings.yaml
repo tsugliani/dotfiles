@@ -12,6 +12,10 @@ op:
   ssh_personal_item:    "SSH-Personal"
   ssh_zpods_item:       "SSH-zPodFactory"
   github_personal_item: "GitHub-Personal"
+  # macOS 1Password agent socket. The Team ID (2BUA8C4S2C) is 1Password's,
+  # not user-specific — same on every Mac. Override per-machine in chezmoi.toml
+  # if you use a non-standard install (e.g. ~/.1password/agent.sock symlink).
+  ssh_agent_socket: "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
 
 packages:
   linux:
